@@ -2942,9 +2942,61 @@ class Dataset(ConjunctiveGraph):
         encoding: Optional[str] = None,
         **args: Any,
     ) -> Union[bytes, str, Graph]:
+        if format in ("rdfc-1.0", "application/rdfc-1.0"):
+            return self._serialize_rdfc(destination, base, encoding, **args)
         return super(Dataset, self).serialize(
             destination=destination, format=format, base=base, encoding=encoding, **args
         )
+
+    def _serialize_rdfc(
+        self,
+        destination: Optional[Union[str, pathlib.PurePath, IO[bytes]]],
+        base: Optional[str],
+        encoding: Optional[str],
+        **args: Any,
+    ) -> Union[bytes, str, Graph]:
+        """Serialize this dataset as RDFC-1.0 canonical N-Quads.
+
+        Every argument check and the whole canonicalization run happen before
+        the destination is opened or written to, so a failure leaves an
+        existing file or a caller-supplied stream untouched.
+        """
+        # Imported lazily: rdflib.compare imports rdflib.graph.
+        from rdflib.compare import canonicalize_dataset
+
+        if base is not None:
+            raise ValueError(
+                "the 'rdfc-1.0' format does not support a base IRI; "
+                "canonical N-Quads contains only absolute IRIs"
+            )
+        if encoding is not None and encoding.lower() not in ("utf-8", "utf8"):
+            raise ValueError(
+                f"the 'rdfc-1.0' format is UTF-8 only, got encoding {encoding!r}"
+            )
+        data = canonicalize_dataset(self)
+        if destination is None:
+            if encoding is None:
+                return data.decode("utf-8")
+            return data
+        if hasattr(destination, "write"):
+            cast(IO[bytes], destination).write(data)
+        else:
+            if isinstance(destination, pathlib.PurePath):
+                os_path = str(destination)
+            else:
+                location = cast(str, destination)
+                scheme, netloc, path, params, _query, fragment = urlparse(location)
+                if scheme == "file":
+                    if netloc != "":
+                        raise ValueError(
+                            f"the file URI {location!r} has an authority component which is not supported"
+                        )
+                    os_path = url2pathname(path)
+                else:
+                    os_path = location
+            with open(os_path, "wb") as stream:
+                stream.write(data)
+        return self
 
 
 class QuotedGraph(Graph):

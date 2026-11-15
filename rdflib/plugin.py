@@ -332,6 +332,18 @@ register(
     "NQuadsSerializer",
 )
 register(
+    "application/rdfc-1.0",
+    Serializer,
+    "rdflib.plugins.serializers.rdfc",
+    "RDFCSerializer",
+)
+register(
+    "rdfc-1.0",
+    Serializer,
+    "rdflib.plugins.serializers.rdfc",
+    "RDFCSerializer",
+)
+register(
     "application/trix",
     Serializer,
     "rdflib.plugins.serializers.trix",

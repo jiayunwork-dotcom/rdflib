@@ -25,6 +25,7 @@ nav:
       - Namespaces and Bindings: namespaces_and_bindings.md
       - Persistence: persistence.md
       - Merging graphs: merging.md
+      - Canonicalizing datasets (RDFC-1.0): rdfc_canonicalization.md
       - Security considerations: security_considerations.md
 
     - Extras:
@@ -40,6 +41,7 @@ nav:
     - Examples: apidocs/examples.md
     - Graph: apidocs/rdflib.graph.md
     - Term: apidocs/rdflib.term.md
+    - Compare: apidocs/rdflib.compare.md
     - Namespace: apidocs/rdflib.namespace.md
     - Tools: apidocs/rdflib.tools.md
     - Extras: apidocs/rdflib.extras.md
